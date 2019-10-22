@@ -1,54 +1,76 @@
 /* Prototypes for __malloc_hook, __free_hook */
 #include <malloc.h>
 /* Prototypes for our hooks.  */
-static void my_init_hook (void);
-static void *my_malloc_hook (size_t, const void *);
-static void my_free_hook (void*, const void *);
 
 
-static void
-my_init (void)
+
+//----------------------------------------------
+
+extern void *__libc_malloc(size_t size);
+
+int malloc_hook_active = 1;
+
+void*
+my_malloc_hook (size_t size, void *caller);
+void
+my_free_hook (void* ptr, void *caller);
+
+void*
+malloc (size_t size)
 {
-  old_malloc_hook = __malloc_hook;
-  old_free_hook = __free_hook;
-  __malloc_hook = my_malloc_hook;
-  __free_hook = my_free_hook;
+  void *caller = __builtin_return_address(0);
+  if (malloc_hook_active)
+    return my_malloc_hook(size, caller);
+  return __libc_malloc(size);
 }
 
-static void *
-my_malloc_hook (size_t size, const void *caller)
+void*
+my_malloc_hook (size_t size, void *caller)
 {
   void *result;
-  /* Restore all old hooks */
-  __malloc_hook = old_malloc_hook;
-  __free_hook = old_free_hook;
-  /* Call recursively */
-  result = malloc (size);
-  /* Save underlying hooks */
-  old_malloc_hook = __malloc_hook;
-  old_free_hook = __free_hook;
-  /* printf might call malloc, so protect it too. */
+
+  // deactivate hooks for logging
+  malloc_hook_active = 0;
+
+  result = malloc(size);
+
+  // do logging
   printf ("malloc (%u) returns %p\n", (unsigned int) size, result);
-  /* Restore our own hooks */
-  __malloc_hook = my_malloc_hook;
-  __free_hook = my_free_hook;
+
+  // reactivate hooks
+  malloc_hook_active = 1;
+
   return result;
 }
 
-static void
-my_free_hook (void *ptr, const void *caller)
+
+extern void  __libc_free(void*);
+
+void
+free (void* ptr)
 {
-  /* Restore all old hooks */
-  __malloc_hook = old_malloc_hook;
-  __free_hook = old_free_hook;
-  /* Call recursively */
-  free (ptr);
-  /* Save underlying hooks */
-  old_malloc_hook = __malloc_hook;
-  old_free_hook = __free_hook;
-  /* printf might call free, so protect it too. */
-  printf ("freed pointer %p\n", ptr);
-  /* Restore our own hooks */
-  __malloc_hook = my_malloc_hook;
-  __free_hook = my_free_hook;
+  if (malloc_hook_active) {
+    void *caller = __builtin_return_address(0); 
+    my_free_hook(ptr, caller);
+  }
+  else 
+    __libc_free(ptr);
+  
 }
+
+void
+my_free_hook (void* ptr, void *caller)
+{
+  // deactivate hooks for logging
+  malloc_hook_active = 0;
+
+  free(ptr);
+
+  // do logging
+  printf ("freed pointer %p returns %p\n", ptr, caller);
+
+  // reactivate hooks
+  malloc_hook_active = 1;
+
+}
+

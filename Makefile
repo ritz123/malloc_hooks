@@ -4,10 +4,14 @@ all: t_mtrace
 CC:=gcc
 
 clean:
-	rm -f *.o t_mtrace
+	rm -f *.o *.so t_mtrace
 
-t_mtrace: t_mtrace.o
-	$(CC) $< -o $@
+libmy_malloc.so: my_malloc.o
+	$(CC) -shared $< -o $@
+
+t_mtrace: t_mtrace.o libmy_malloc.so
+	$(CC) -L. $< -o $@ -lmy_malloc
 
 %.o: %.c
-	$(CC) -g -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(CC) -g -fPIC -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
