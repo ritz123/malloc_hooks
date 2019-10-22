@@ -1,5 +1,10 @@
 /* Prototypes for __malloc_hook, __free_hook */
 #include <malloc.h>
+#include <stdio.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 /* Prototypes for our hooks.  */
 
 
@@ -35,7 +40,12 @@ my_malloc_hook (size_t size, void *caller)
   result = malloc(size);
 
   // do logging
-  printf ("malloc (%u) returns %p\n", (unsigned int) size, result);
+  printf ("==> malloc (%u) returns %p\n", (unsigned int) size, result);
+
+  void *array[10];
+  size_t bt_size;
+  bt_size = backtrace(array, 10);
+  backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
 
   // reactivate hooks
   malloc_hook_active = 1;
@@ -67,7 +77,12 @@ my_free_hook (void* ptr, void *caller)
   free(ptr);
 
   // do logging
-  printf ("freed pointer %p returns %p\n", ptr, caller);
+  printf ("<== freed pointer %p returns %p\n", ptr, caller);
+
+  void *array[10];
+  size_t bt_size;
+  bt_size = backtrace(array, 10);
+  backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
 
   // reactivate hooks
   malloc_hook_active = 1;
