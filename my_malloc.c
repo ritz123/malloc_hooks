@@ -5,87 +5,82 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 /* Prototypes for our hooks.  */
 
-
+void
+my_puts(char *str, size_t size) {
+    for (int i = 0; i < size && str[i] != '\0'; i++)
+        putc(str[i], stderr);
+}
 
 //----------------------------------------------
 
 extern void *__libc_malloc(size_t size);
 
-int malloc_hook_active = 1;
+void *
+malloc(size_t size) {
+    void *caller = __builtin_return_address(0);
+    void *result = __libc_malloc(size);
 
-void*
-my_malloc_hook (size_t size, void *caller);
-void
-my_free_hook (void* ptr, void *caller);
+    do {
+        // do logging
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "==> malloc (%u) returns %p caller: %p\n",
+                (unsigned int) size, result, caller);
+        my_puts(buf, sizeof(buf));
 
-void*
-malloc (size_t size)
-{
-  void *caller = __builtin_return_address(0);
-  if (malloc_hook_active)
-    return my_malloc_hook(size, caller);
-  return __libc_malloc(size);
-}
+        void *array[10];
+        size_t bt_size;
+        //    bt_size = backtrace(array, 10);
+        //    backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+    } while (0);
 
-void*
-my_malloc_hook (size_t size, void *caller)
-{
-  void *result;
+    return result;
 
-  // deactivate hooks for logging
-  malloc_hook_active = 0;
-
-  result = malloc(size);
-
-  // do logging
-  printf ("==> malloc (%u) returns %p\n", (unsigned int) size, result);
-
-  void *array[10];
-  size_t bt_size;
-  bt_size = backtrace(array, 10);
-  backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-
-  // reactivate hooks
-  malloc_hook_active = 1;
-
-  return result;
 }
 
 
-extern void  __libc_free(void*);
+extern void *__libc_realloc(void *ptr, size_t size);
+
+void *
+realloc(void *ptr, size_t size) {
+    void *caller = __builtin_return_address(0);
+    void *result = __libc_realloc(ptr, size);
+    do {
+        // do logging
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "==> realloc (%u | %p) returns %p caller: %p\n",
+                (unsigned int) size, ptr, result, caller);
+        my_puts(buf, sizeof(buf));
+        void *array[10];
+        size_t bt_size;
+//    bt_size = backtrace(array, 10);
+//    backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+    } while (0);
+
+    return result;
+
+}
+
+
+extern void __libc_free(void *);
 
 void
-free (void* ptr)
-{
-  if (malloc_hook_active) {
-    void *caller = __builtin_return_address(0); 
-    my_free_hook(ptr, caller);
-  }
-  else 
+free(void *ptr) {
+    void *caller = __builtin_return_address(0);
     __libc_free(ptr);
-  
-}
-
-void
-my_free_hook (void* ptr, void *caller)
-{
-  // deactivate hooks for logging
-  malloc_hook_active = 0;
-
-  free(ptr);
-
-  // do logging
-  printf ("<== freed pointer %p returns %p\n", ptr, caller);
-
-  void *array[10];
-  size_t bt_size;
-  bt_size = backtrace(array, 10);
-  backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-
-  // reactivate hooks
-  malloc_hook_active = 1;
+    do {
+        // do logging
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "<== freed pointer %p caller: %p\n", ptr, caller);
+        my_puts(buf, sizeof(buf));
+        void *array[10];
+        size_t bt_size;
+//    bt_size = backtrace(array, 10);
+//    backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+    } while (0);
 
 }
+
 

@@ -3,21 +3,21 @@
 #include <stdio.h>
 
 void func1(void) {
-  int j;
-  for (j = 0; j < 2; j++)
-    malloc(100);            /* Never freed--a memory leak */
+    int j;
+    void *ptr[2];
+    for (j = 0; j < 2; j++) {
+        ptr[j] = malloc(100);
+    }
 
+    for (j = 0; j < 2; j++) {
+        ptr[j] = realloc(ptr[j], 300);
+    }
 }
 
 int
-main(int argc, char *argv[])
-{
-  
+main(int argc, char *argv[]) {
 
-  // mtrace();
-
-
-  func1();
-  getchar();
-  exit(EXIT_SUCCESS);
+    func1();
+    getchar();
+    exit(EXIT_SUCCESS);
 }
