@@ -12,6 +12,10 @@ void func1(void) {
     for (j = 0; j < 2; j++) {
         ptr[j] = realloc(ptr[j], 300);
     }
+
+    for (j = 0; j < 2; j++) {
+        free (ptr[j]);
+    }
 }
 
 
