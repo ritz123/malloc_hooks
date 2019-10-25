@@ -24,6 +24,4 @@ int
 main(int argc, char *argv[]) {
     mtrace();
     func1();
-    getchar();
-    exit(EXIT_SUCCESS);
 }
