@@ -129,7 +129,7 @@ free(void *ptr) {
 }
 
 void
-memory_management_init() {
+mtrace() {
     malloc_init();
     realloc_init();
     free_init();
