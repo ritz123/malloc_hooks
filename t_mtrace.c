@@ -1,4 +1,3 @@
-#include <mcheck.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -14,9 +13,12 @@ void func1(void) {
     }
 }
 
+void
+memory_management_init();
+
 int
 main(int argc, char *argv[]) {
-
+    memory_management_init();
     func1();
     getchar();
     exit(EXIT_SUCCESS);
