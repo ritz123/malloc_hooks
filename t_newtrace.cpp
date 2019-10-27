@@ -16,10 +16,12 @@ void func1(void) {
     }
 }
 
-
+void func2() {
+    func1();
+}
 
 int
 main(int argc, char *argv[]) {
     mtrace();
-    func1();
+    func2();
 }
