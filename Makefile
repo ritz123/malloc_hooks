@@ -20,7 +20,7 @@ t_mtrace: t_mtrace.o libmy_mtrace.so
 	$(CC) -L. $< -o $@ -lmy_mtrace 
 
 t_newtrace: t_newtrace.o libmy_mtrace++.so
-	$(CXX) -L. $< -o $@ -lmy_mtrace++ 
+	$(CXX) -L. $< -o $@ -lmy_mtrace++ -lmy_mtrace -lpthread
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@

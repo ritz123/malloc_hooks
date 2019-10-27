@@ -1,27 +1,29 @@
 
 #include "my_mtrace.h"
 
+#include <cctype>
+using namespace std;
+
 extern "C"{
-void *
-malloc(int size);
-void
-free(void *ptr);
+
+void *malloc(int size);
+void free(void *ptr);
+
 }
 
-void * operator new(decltype(sizeof(0)) n) noexcept(false)
-{
-  	//...
+
+void* operator new(std::size_t n) noexcept(false){
 	return malloc(n);
+} 
+
+void  operator delete(void* p) noexcept(false) {
+	free(p);
 }
 
-void * operator new[](decltype(sizeof(0)) n) noexcept(false)
-{
-  	//...
+void* operator new[](std::size_t n) noexcept(false) {
 	return malloc(n);
-}
+} 
 
-void operator delete(void * p) noexcept(false)
-{
-  	//...
-  	free((long unsigned int*)p);
+void  operator delete[](void* p) noexcept(false) {
+	free(p);
 }

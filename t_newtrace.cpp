@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "my_mtrace.h"
+using  namespace std;
 
 void func1(void) {
     int j;
