@@ -41,7 +41,7 @@ malloc(size_t size) {
         skip_malloc_print = 1;
         // do logging
         char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "==> malloc (%u) returns %p caller: %p\n",
+        snprintf(buf, sizeof(buf), "==> malloc (%u) ptr: %p pc: %p\n",
                 (unsigned int) size, result, caller);
         my_puts(buf, sizeof(buf));
 
@@ -49,6 +49,7 @@ malloc(size_t size) {
         size_t bt_size;
         bt_size = backtrace(array, 10);
         backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+        my_puts("\n",2);
         skip_malloc_print = 0;
     }
     pthread_mutex_unlock(&malloc_mutex);
@@ -80,13 +81,14 @@ realloc(void *ptr, size_t size) {
         skip_realloc_print = 1;
         // do logging
         char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "==> realloc (%u | %p) returns %p caller: %p\n",
+        snprintf(buf, sizeof(buf), "==> realloc (%u | %p) ptr: %p pc: %p\n",
                 (unsigned int) size, ptr, result, caller);
         my_puts(buf, sizeof(buf));
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
         backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+        my_puts("\n",2);
         skip_realloc_print = 0;
     }
 
@@ -118,12 +120,13 @@ free(void *ptr) {
         skip_free_print = 1;
         // do logging
         char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "<== freed pointer %p caller: %p\n", ptr, caller);
+        snprintf(buf, sizeof(buf), "<== freed ptr: %p pc: %p\n", ptr, caller);
         my_puts(buf, sizeof(buf));
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
         backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+        my_puts("\n",2);
         skip_free_print = 0;
     }
 }

@@ -3,6 +3,16 @@
 #include "my_mtrace.h"
 using  namespace std;
 
+class A {
+public:
+    A(){
+        printf("A:A()\n");
+    }
+    void hi() {
+        printf("hi\n");
+    }
+};
+
 void func1(void) {
     int j;
     char *ptr[2];
@@ -24,4 +34,6 @@ int
 main(int argc, char *argv[]) {
     mtrace();
     func2();
+    A a;
+    a.hi();
 }
