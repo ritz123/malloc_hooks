@@ -6,7 +6,7 @@ using namespace std;
 
 extern "C"{
 
-void *malloc(int size);
+void *malloc(long unsigned size);
 void free(void *ptr);
 
 }
