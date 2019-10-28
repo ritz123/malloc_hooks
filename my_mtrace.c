@@ -23,10 +23,11 @@ extern void *__libc_malloc(size_t size);
 
 static pthread_mutex_t malloc_mutex;
 static pthread_mutexattr_t malloc_mutex_attr;
-static int skip_malloc_print = 0;
+static int skip_malloc_print = 1;
 
 void
 malloc_init() {
+    skip_malloc_print = 0;
     pthread_mutexattr_init(&malloc_mutex_attr);
     pthread_mutexattr_settype(&malloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&malloc_mutex, &malloc_mutex_attr);
@@ -63,10 +64,11 @@ extern void *__libc_realloc(void *ptr, size_t size);
 
 static pthread_mutex_t realloc_mutex;
 static pthread_mutexattr_t realloc_mutex_attr;
-static int skip_realloc_print = 0;
+static int skip_realloc_print = 1;
 
 void
 realloc_init() {
+    skip_realloc_print = 0;
     pthread_mutexattr_init(&realloc_mutex_attr);
     pthread_mutexattr_settype(&realloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&realloc_mutex, &realloc_mutex_attr);
@@ -91,7 +93,7 @@ realloc(void *ptr, size_t size) {
         my_puts("\n",2);
         skip_realloc_print = 0;
     }
-
+    pthread_mutex_unlock(&realloc_mutex);
     return result;
 
 }
@@ -102,10 +104,11 @@ extern void __libc_free(void *);
 
 static pthread_mutex_t free_mutex;
 static pthread_mutexattr_t free_mutex_attr;
-static int skip_free_print = 0;
+static int skip_free_print = 1;
 
 void
 free_init() {
+    skip_free_print = 0;
     pthread_mutexattr_init(&free_mutex_attr);
     pthread_mutexattr_settype(&free_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&free_mutex, &free_mutex_attr);
@@ -129,6 +132,7 @@ free(void *ptr) {
         my_puts("\n",2);
         skip_free_print = 0;
     }
+    pthread_mutex_unlock(&free_mutex);
 }
 
 void
