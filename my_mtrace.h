@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 void mtrace();
+void untrace();
 
 #ifdef __cplusplus
 }

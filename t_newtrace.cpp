@@ -34,6 +34,14 @@ int
 main(int argc, char *argv[]) {
     mtrace();
     func2();
-    A a;
-    a.hi();
+    A* a = new A();
+    printf("%p\n", (void*)a);
+    a->hi();
+    printf("========\n");
+    untrace();
+    func2();
+    A* b = new A();
+    printf("%p\n", (void*)b);
+    b->hi();
+    printf("========\n");
 }

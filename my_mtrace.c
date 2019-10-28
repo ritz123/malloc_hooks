@@ -27,7 +27,7 @@ static int skip_malloc_print = 1;
 
 void
 malloc_init() {
-    skip_malloc_print = 0;
+    
     pthread_mutexattr_init(&malloc_mutex_attr);
     pthread_mutexattr_settype(&malloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&malloc_mutex, &malloc_mutex_attr);
@@ -68,7 +68,7 @@ static int skip_realloc_print = 1;
 
 void
 realloc_init() {
-    skip_realloc_print = 0;
+    
     pthread_mutexattr_init(&realloc_mutex_attr);
     pthread_mutexattr_settype(&realloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&realloc_mutex, &realloc_mutex_attr);
@@ -108,7 +108,7 @@ static int skip_free_print = 1;
 
 void
 free_init() {
-    skip_free_print = 0;
+    
     pthread_mutexattr_init(&free_mutex_attr);
     pthread_mutexattr_settype(&free_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&free_mutex, &free_mutex_attr);
@@ -135,11 +135,28 @@ free(void *ptr) {
     pthread_mutex_unlock(&free_mutex);
 }
 
+// Initialize the locks
 void
-mtrace() {
+init_memory_management(){
     malloc_init();
     realloc_init();
     free_init();
 }
 
+// call this before main()
+void init_memory_management() __attribute__ ((constructor));
 
+// Turn on the logic
+void
+mtrace() {
+    skip_free_print = 0;
+    skip_malloc_print = 0;
+    skip_realloc_print = 0;
+}
+
+void
+untrace() {
+    skip_free_print = 1;
+    skip_malloc_print = 1;
+    skip_realloc_print = 1;
+}
