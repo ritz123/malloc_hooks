@@ -7,16 +7,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-
-
-/* Prototypes for our hooks.  */
-
-void
-my_puts(char *str, size_t size) {
-    for (int i = 0; i < size && str[i] != '\0'; i++)
-        putc(str[i], stderr);
-}
-
+static int show_full = 0;
 //----------------------------------------------
 
 extern void *__libc_malloc(size_t size);
@@ -33,24 +24,34 @@ malloc_init() {
     pthread_mutex_init(&malloc_mutex, &malloc_mutex_attr);
 }
 
+void 
+print_backtrace(void* array[], unsigned int bt_size) {
+   
+    fprintf(stderr,"[");
+    for (int i = 0; i < bt_size; i++) {
+        fprintf(stderr," %p ", array[i]);
+    }
+    fprintf(stderr,"]\n");
+    fflush(stderr);
+}
+
 void *
 malloc(size_t size) {
-    void *caller = __builtin_return_address(0);
     void *result = __libc_malloc(size);
     pthread_mutex_lock(&malloc_mutex);
     if(!skip_malloc_print) {
         skip_malloc_print = 1;
         // do logging
-        char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "==> malloc (%u) ptr: %p pc: %p\n",
-                (unsigned int) size, result, caller);
-        my_puts(buf, sizeof(buf));
-
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
-        backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-        my_puts("\n",2);
+        fprintf(stderr,"== m (%u) ptr: %p ", (unsigned int) size, result);
+        fflush(stderr);
+        if (show_full) {
+            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+        } else {
+            print_backtrace(array, bt_size);
+        }
         skip_malloc_print = 0;
     }
     pthread_mutex_unlock(&malloc_mutex);
@@ -76,21 +77,22 @@ realloc_init() {
 
 void *
 realloc(void *ptr, size_t size) {
-    void *caller = __builtin_return_address(0);
     void *result = __libc_realloc(ptr, size);
     pthread_mutex_lock(&realloc_mutex);
     if(!skip_realloc_print) {
         skip_realloc_print = 1;
         // do logging
-        char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "==> realloc (%u | %p) ptr: %p pc: %p\n",
-                (unsigned int) size, ptr, result, caller);
-        my_puts(buf, sizeof(buf));
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
-        backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-        my_puts("\n",2);
+        fprintf(stderr,"== r (%u) optr: %p ptr: %p ", 
+            (unsigned int) size, ptr, result);
+        fflush(stderr);
+        if (show_full) {   
+            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);   
+        } else {
+            print_backtrace(array, bt_size);
+        }
         skip_realloc_print = 0;
     }
     pthread_mutex_unlock(&realloc_mutex);
@@ -116,20 +118,22 @@ free_init() {
 
 void
 free(void *ptr) {
-    void *caller = __builtin_return_address(0);
     __libc_free(ptr);
     pthread_mutex_lock(&free_mutex);
     if(!skip_free_print) {
         skip_free_print = 1;
         // do logging
-        char buf[1024] = {0};
-        snprintf(buf, sizeof(buf), "<== freed ptr: %p pc: %p\n", ptr, caller);
-        my_puts(buf, sizeof(buf));
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
-        backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-        my_puts("\n",2);
+        unsigned int mem_size = malloc_usable_size (ptr);
+        fprintf(stderr,"== f (%u) ptr: %p ", mem_size, ptr);
+        fflush(stderr);
+        if (show_full) {
+            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
+        } else {
+            print_backtrace(array, bt_size);
+        }
         skip_free_print = 0;
     }
     pthread_mutex_unlock(&free_mutex);
@@ -138,6 +142,12 @@ free(void *ptr) {
 // Initialize the locks
 void
 init_memory_management(){
+    char * full = getenv("MTRACE_FULL");
+    if (full != NULL) {
+        show_full = 1;
+    } else {
+        show_full = 0;
+    }
     malloc_init();
     realloc_init();
     free_init();

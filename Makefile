@@ -8,6 +8,12 @@ CFLAGS:=-fPIC -g
 CXXFLAGS:=-fPIC -g	-std=c++11	
 LDFLAGS=-rdynamic
 
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
+
+
+
 clean:
 	rm -f *.o *.so t_mtrace t_newtrace
 
@@ -28,3 +34,21 @@ t_newtrace: t_newtrace.o libmy_mtrace++.so
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
+
+install: install_lib install_header
+	@echo "Installed.."
+
+
+install_lib: libmy_mtrace.so libmy_mtrace++.so
+	install -d $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 $? $(DESTDIR)$(PREFIX)/lib/
+
+
+install_header: my_mtrace.h
+	install -d $(DESTDIR)$(PREFIX)/include/
+	install -m 644 $? $(DESTDIR)$(PREFIX)/include/
+
+
+test:
+	./run.sh
+	./run++.sh
