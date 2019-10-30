@@ -152,8 +152,8 @@ free(void *ptr) {
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
-        unsigned int mem_size = malloc_usable_size (ptr);
-        fprintf(stderr,"== f (%u) ptr: %p ", mem_size, ptr);
+        // unsigned int mem_size = malloc_usable_size (ptr);
+        fprintf(stderr,"== f ptr: %p ", ptr);
         fflush(stderr);
         if (show_full) {
             backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
