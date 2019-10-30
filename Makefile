@@ -26,7 +26,7 @@
 
 
 
-all: t_mtrace t_newtrace
+all: test_mem_trace test_new_trace
 
 CC:=gcc
 CXX:=g++
@@ -42,19 +42,19 @@ endif
 
 
 clean:
-	rm -f *.o *.so t_mtrace t_newtrace
+	rm -f *.o *.so test_mem_trace test_new_trace
 
-libmy_mtrace.so: my_mtrace.o
+libmem_trace.so: mem_trace.o
 	$(CC) -rdynamic -shared $< -o $@ -lpthread
 
-libmy_mtrace++.so: my_new.o libmy_mtrace.so
-	$(CXX) -rdynamic -shared $< -o $@ -lpthread -L. -lmy_mtrace
+libmem_trace++.so: new_trace.o libmem_trace.so
+	$(CXX) -rdynamic -shared $< -o $@ -lpthread -L. -lmem_trace
 
-t_mtrace: t_mtrace.o libmy_mtrace.so
-	$(CC) -rdynamic -g -L. $< -o $@ -lmy_mtrace 
+test_mem_trace: test_mem_trace.o libmem_trace.so
+	$(CC) -rdynamic -g -L. $< -o $@ -lmem_trace 
 
-t_newtrace: t_newtrace.o libmy_mtrace++.so
-	$(CXX) -rdynamic -g -L. $< -o $@ -lmy_mtrace++ -lmy_mtrace -lpthread
+test_new_trace: test_new_trace.o libmem_trace++.so
+	$(CXX) -rdynamic -g -L. $< -o $@ -lmem_trace++ -lmem_trace -lpthread
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
@@ -66,12 +66,12 @@ install: install_lib install_header
 	@echo "Installed.."
 
 
-install_lib: libmy_mtrace.so libmy_mtrace++.so
+install_lib: libmem_trace.so libmem_trace++.so
 	install -d $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 $? $(DESTDIR)$(PREFIX)/lib/
 
 
-install_header: my_mtrace.h
+install_header: mem_trace.h
 	install -d $(DESTDIR)$(PREFIX)/include/
 	install -m 644 $? $(DESTDIR)$(PREFIX)/include/
 

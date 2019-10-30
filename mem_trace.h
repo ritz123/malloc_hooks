@@ -33,8 +33,8 @@ SOFTWARE.
 extern "C" {
 #endif
 
-void mtrace();
-void untrace();
+void enable_mem_trace();
+void disable_mem_trace();
 
 #ifdef __cplusplus
 }

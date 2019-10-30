@@ -28,4 +28,5 @@
 
 
 export LD_LIBRARY_PATH=.
-./t_newtrace
+export MTRACE_FULL=yes
+./test_mem_trace

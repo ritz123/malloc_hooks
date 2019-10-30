@@ -26,31 +26,50 @@ SOFTWARE.
 
 */
 
-#include "my_mtrace.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include "mem_trace.h"
+using  namespace std;
 
-#include <cctype>
-using namespace std;
+class A {
+public:
+    A(){
+        printf("A:A()\n");
+    }
+    void hi() {
+        printf("hi\n");
+    }
+};
 
-extern "C"{
+void func1(void) {
+    int j;
+    char *ptr[2];
+    for (j = 0; j < 2; j++) {
+        ptr[j] = new char[100];
+    }
 
-void *malloc(long unsigned size);
-void free(void *ptr);
 
+    for (j = 0; j < 2; j++) {
+        delete ptr[j];
+    }
 }
 
-
-void* operator new(std::size_t n) noexcept(false){
-	return malloc(n);
-} 
-
-void  operator delete(void* p) noexcept(false) {
-	free(p);
+void func2() {
+    func1();
 }
 
-void* operator new[](std::size_t n) noexcept(false) {
-	return malloc(n);
-} 
-
-void  operator delete[](void* p) noexcept(false) {
-	free(p);
+int
+main(int argc, char *argv[]) {
+    enable_mem_trace();
+    func2();
+    A* a = new A();
+    printf("%p\n", (void*)a);
+    a->hi();
+    printf("========\n");
+    disable_mem_trace();
+    func2();
+    A* b = new A();
+    printf("%p\n", (void*)b);
+    b->hi();
+    printf("========\n");
 }

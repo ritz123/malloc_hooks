@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "my_mtrace.h"
+#include "mem_trace.h"
 
 void func1(void) {
     int j;
@@ -50,6 +50,6 @@ void func1(void) {
 
 int
 main(int argc, char *argv[]) {
-    mtrace();
+    enable_mem_trace();
     func1();
 }

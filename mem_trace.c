@@ -184,14 +184,14 @@ void init_memory_management() __attribute__ ((constructor));
 
 // Turn on the logic
 void
-mtrace() {
+enable_mem_trace() {
     skip_free_print = 0;
     skip_malloc_print = 0;
     skip_realloc_print = 0;
 }
 
 void
-untrace() {
+disable_mem_trace() {
     skip_free_print = 1;
     skip_malloc_print = 1;
     skip_realloc_print = 1;
