@@ -75,7 +75,7 @@ install_header: mem_trace.h
 	install -d $(DESTDIR)$(PREFIX)/include/
 	install -m 644 $? $(DESTDIR)$(PREFIX)/include/
 
-install_script: check4leaks.pl
+install_script: check4leaks.pl resolve_symbols.pl resolve_symbols.sh
 	install -d $(DESTDIR)$(PREFIX)/bin/
 	install -m 755 $? $(DESTDIR)$(PREFIX)/bin/
 
