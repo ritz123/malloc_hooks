@@ -34,21 +34,14 @@ SOFTWARE.
 #include <pthread.h>
 
 static int show_full = 0;
+static pthread_mutex_t mem_mutex;
+static pthread_mutexattr_t mem_mutex_attr;
+
 //----------------------------------------------
 
 extern void *__libc_malloc(size_t size);
 
-static pthread_mutex_t malloc_mutex;
-static pthread_mutexattr_t malloc_mutex_attr;
 static int skip_malloc_print = 1;
-
-void
-malloc_init() {
-    
-    pthread_mutexattr_init(&malloc_mutex_attr);
-    pthread_mutexattr_settype(&malloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&malloc_mutex, &malloc_mutex_attr);
-}
 
 void 
 print_backtrace(void* array[], unsigned int bt_size) {
@@ -64,7 +57,7 @@ print_backtrace(void* array[], unsigned int bt_size) {
 void *
 malloc(size_t size) {
     void *result = __libc_malloc(size);
-    pthread_mutex_lock(&malloc_mutex);
+    pthread_mutex_lock(&mem_mutex);
     if(!skip_malloc_print) {
         skip_malloc_print = 1;
         // do logging
@@ -80,7 +73,7 @@ malloc(size_t size) {
         }
         skip_malloc_print = 0;
     }
-    pthread_mutex_unlock(&malloc_mutex);
+    pthread_mutex_unlock(&mem_mutex);
     return result;
 
 }
@@ -89,22 +82,12 @@ malloc(size_t size) {
 
 extern void *__libc_realloc(void *ptr, size_t size);
 
-static pthread_mutex_t realloc_mutex;
-static pthread_mutexattr_t realloc_mutex_attr;
 static int skip_realloc_print = 1;
-
-void
-realloc_init() {
-    
-    pthread_mutexattr_init(&realloc_mutex_attr);
-    pthread_mutexattr_settype(&realloc_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&realloc_mutex, &realloc_mutex_attr);
-}
 
 void *
 realloc(void *ptr, size_t size) {
     void *result = __libc_realloc(ptr, size);
-    pthread_mutex_lock(&realloc_mutex);
+    pthread_mutex_lock(&mem_mutex);
     if(!skip_realloc_print) {
         skip_realloc_print = 1;
         // do logging
@@ -121,7 +104,7 @@ realloc(void *ptr, size_t size) {
         }
         skip_realloc_print = 0;
     }
-    pthread_mutex_unlock(&realloc_mutex);
+    pthread_mutex_unlock(&mem_mutex);
     return result;
 
 }
@@ -130,22 +113,14 @@ realloc(void *ptr, size_t size) {
 
 extern void __libc_free(void *);
 
-static pthread_mutex_t free_mutex;
-static pthread_mutexattr_t free_mutex_attr;
+
 static int skip_free_print = 1;
 
-void
-free_init() {
-    
-    pthread_mutexattr_init(&free_mutex_attr);
-    pthread_mutexattr_settype(&free_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&free_mutex, &free_mutex_attr);
-}
 
 void
 free(void *ptr) {
     __libc_free(ptr);
-    pthread_mutex_lock(&free_mutex);
+    pthread_mutex_lock(&mem_mutex);
     if(!skip_free_print) {
         skip_free_print = 1;
         // do logging
@@ -162,7 +137,7 @@ free(void *ptr) {
         }
         skip_free_print = 0;
     }
-    pthread_mutex_unlock(&free_mutex);
+    pthread_mutex_unlock(&mem_mutex);
 }
 
 // Initialize the locks
@@ -174,9 +149,9 @@ init_memory_management(){
     } else {
         show_full = 0;
     }
-    malloc_init();
-    realloc_init();
-    free_init();
+    pthread_mutexattr_init(&mem_mutex_attr);
+    pthread_mutexattr_settype(&mem_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&mem_mutex, &mem_mutex_attr);
 }
 
 // call this before main()
