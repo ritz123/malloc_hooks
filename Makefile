@@ -62,7 +62,7 @@ test_new_trace: test_new_trace.o libmem_trace++.so
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
-install: install_lib install_header
+install: install_lib install_header install_script
 	@echo "Installed.."
 
 
@@ -75,6 +75,9 @@ install_header: mem_trace.h
 	install -d $(DESTDIR)$(PREFIX)/include/
 	install -m 644 $? $(DESTDIR)$(PREFIX)/include/
 
+install_script: check4leaks.pl
+	install -d $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 $? $(DESTDIR)$(PREFIX)/bin/
 
 test:
 	./run.sh
