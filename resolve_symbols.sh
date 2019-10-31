@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TOP=$(dirname $0)
-[ $# != 3 ] && echo "Usage: $0 <memeory-report.txt> <exec-path> <exec-pid>" && exit 1
+[ $# != 3 ] && echo "Usage: $0 <memory-report.txt> <exec-path> <exec-pid>" && exit 1
 REPORT=$1
 BINARY=$2
 PID_BIN=$3

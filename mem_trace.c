@@ -33,7 +33,6 @@ SOFTWARE.
 #include <unistd.h>
 #include <pthread.h>
 
-static int show_full = 0;
 static pthread_mutex_t mem_mutex;
 static pthread_mutexattr_t mem_mutex_attr;
 
@@ -66,11 +65,7 @@ malloc(size_t size) {
         bt_size = backtrace(array, 10);
         fprintf(stderr,"== m (%u) ptr: %p ", (unsigned int) size, result);
         fflush(stderr);
-        if (show_full) {
-            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-        } else {
-            print_backtrace(array, bt_size);
-        }
+        print_backtrace(array, bt_size);
         skip_malloc_print = 0;
     }
     pthread_mutex_unlock(&mem_mutex);
@@ -97,11 +92,7 @@ realloc(void *ptr, size_t size) {
         fprintf(stderr,"== r (%u) optr: %p ptr: %p ", 
             (unsigned int) size, ptr, result);
         fflush(stderr);
-        if (show_full) {   
-            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);   
-        } else {
-            print_backtrace(array, bt_size);
-        }
+        print_backtrace(array, bt_size);
         skip_realloc_print = 0;
     }
     pthread_mutex_unlock(&mem_mutex);
@@ -127,14 +118,9 @@ free(void *ptr) {
         void *array[10];
         size_t bt_size;
         bt_size = backtrace(array, 10);
-        // unsigned int mem_size = malloc_usable_size (ptr);
         fprintf(stderr,"== f ptr: %p ", ptr);
         fflush(stderr);
-        if (show_full) {
-            backtrace_symbols_fd(array, bt_size, STDERR_FILENO);
-        } else {
-            print_backtrace(array, bt_size);
-        }
+        print_backtrace(array, bt_size);
         skip_free_print = 0;
     }
     pthread_mutex_unlock(&mem_mutex);
@@ -143,12 +129,6 @@ free(void *ptr) {
 // Initialize the locks
 void
 init_memory_management(){
-    char * full = getenv("MTRACE_FULL");
-    if (full != NULL) {
-        show_full = 1;
-    } else {
-        show_full = 0;
-    }
     pthread_mutexattr_init(&mem_mutex_attr);
     pthread_mutexattr_settype(&mem_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&mem_mutex, &mem_mutex_attr);
