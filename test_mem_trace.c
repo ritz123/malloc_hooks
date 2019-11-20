@@ -44,6 +44,9 @@ void func1(void) {
     for (j = 0; j < 2; j++) {
         free (ptr[j]);
     }
+    for (j = 0; j < 2; j++) {
+        free (ptr[j]);
+    }
 }
 
 

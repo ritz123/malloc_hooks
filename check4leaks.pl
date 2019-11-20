@@ -25,6 +25,7 @@
 # script to compare malloc and free
 
 %mm = ();
+%ff = ();
 while(<>){
 	$line = $_;
 	chomp($line);
@@ -37,7 +38,13 @@ while(<>){
 
 	# free
 	if ($line =~ /^==\s+f\s+ptr:\s+(\S+).*$/) {
-		delete($mm{$1});
+		$mm_key = $1;
+		if (exists($mm{$mm_key})){
+			delete($mm{$mm_key});
+		} else {
+			# double delete
+			$ff{$mm_key} = $line;
+		}
 		next;
 	}
 
@@ -53,3 +60,4 @@ while(<>){
 
 
 print map { "$mm{$_}\n" } keys %mm;
+print map { "$ff{$_}\n" } keys %ff;
